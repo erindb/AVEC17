@@ -1,5 +1,12 @@
 # AVEC17
 
+## Directory structure
+
+* `data`
+	- Will never be committed to GIT, but contains several datasets for the project
+* `models`
+	- Each directory corresponds to a particular model. So far we have two models to write for Desmond's dataset. A more detailed description of the model can be found in the `README.md` at the top of that model's directory.
+
 ## git + Dropbox
 
 **DO NOT COMMIT DATA EVER**
