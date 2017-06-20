@@ -10,11 +10,49 @@ from torch.autograd import Variable
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+import numpy as np
+import os
+import re
 
 # ========== read in datapoints ==========
 
-input_dim = 1
-classes = ["high", "neither", "low"]
+data_dir = "../../data/selfDisclosure"
+filenames = os.listdir(data_dir)
+
+data = None
+
+for filename in filenames:
+    if re.match("[A-Z0-9]{4}_[0-9]{3}\.csv", filename):
+        file_data = np.genfromtxt(os.path.join(data_dir, filename),
+                                      delimiter=',',
+                                      skip_header=1)
+        if data is None:
+            data = file_data
+        else:
+            np.append(data, file_data)
+
+## first dimension is time, then rating
+inputs = data[:,2:]
+ratings = data[:,1]
+
+def discretize(r):
+    if r < 50:
+        return "low"
+    elif r == 50:
+        return "neither"
+    elif r > 50:
+        return "high"
+    else:
+        print("error 203948")
+
+classes = ["low", "neither", "high"]
+
+labels = [classes.index(discretize(r)) for r in ratings]
+
+input_dim = inputs.shape[1]
+
+## convert to torch variables...
+# inputs, labels = ...
 
 # ========== create datasets for k-fold cross-validation ==========
 
@@ -31,10 +69,10 @@ class Net(nn.Module):
         self.w4 = nn.Linear(20, 3)
 
     def forward(self, x):
-    	x = self.w1(F.Sigmoid(self.w1(x)))
-    	x = self.w2(F.Sigmoid(self.w2(x)))
-    	x = self.w3(F.Sigmoid(self.w3(x)))
-    	x = self.w4(x)
+        x = self.w1(F.Sigmoid(self.w1(x)))
+        x = self.w2(F.Sigmoid(self.w2(x)))
+        x = self.w3(F.Sigmoid(self.w3(x)))
+        x = self.w4(x)
         return np.argmax(x)
 
 net = Net()
