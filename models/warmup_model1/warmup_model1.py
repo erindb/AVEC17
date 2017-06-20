@@ -9,6 +9,7 @@ import torch
 from torch.autograd import Variable
 import torch.nn as nn
 import torch.nn.functional as F
+import torch.optim as optim
 
 # ========== read in datapoints ==========
 
@@ -37,6 +38,10 @@ class Net(nn.Module):
         return np.argmax(x)
 
 net = Net()
+
+# define loss function and optimizer
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
 # ========== for each fold: ==========
 
