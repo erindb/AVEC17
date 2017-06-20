@@ -14,7 +14,9 @@ import numpy as np
 import os
 import re
 
-# ========== read in datapoints ==========
+np.random.seed(123)
+
+# ========== read in data ==========
 
 data_dir = "../../data/selfDisclosure"
 filenames = os.listdir(data_dir)
@@ -47,14 +49,23 @@ def discretize(r):
 
 classes = ["low", "neither", "high"]
 
-labels = [classes.index(discretize(r)) for r in ratings]
+labels = np.array([classes.index(discretize(r)) for r in ratings])
 
 input_dim = inputs.shape[1]
+n_datapoints = inputs.shape[0]
 
-## convert to torch variables...
-# inputs, labels = ...
+assert(n_datapoints==labels.shape[0])
+
+## zip labels and inputs together?
 
 # ========== create datasets for k-fold cross-validation ==========
+
+K = 5
+
+indices = np.array(range(0, n_datapoints))
+np.random.shuffle(indices)
+
+folds = np.split(indices, K)
 
 # ========== set up classifier ==========
 
@@ -82,6 +93,14 @@ criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
 # ========== for each fold: ==========
+
+# a = np.arange(9, -1, -1)     # a = array([9, 8, 7, 6, 5, 4, 3, 2, 1, 0])
+# b = a[np.arange(len(a))!=3]  # b = array([9, 8, 7, 5, 4, 3, 2, 1, 0])
+# which will, in general, be much faster than the list comprehension listed above.
+
+for k in range(0, K):
+    valid_indices = folds[k]
+    train_indices = np.concatenate(folds[0:k] + folds[k+1:])
 
 # ==================== ... train classifier ==========
 
