@@ -49,14 +49,13 @@ def discretize(r):
 
 classes = ["low", "neither", "high"]
 
+# make one-hot vectors for each output
 labels = np.array([classes.index(discretize(r)) for r in ratings])
 
 input_dim = inputs.shape[1]
 n_datapoints = inputs.shape[0]
 
 assert(n_datapoints==labels.shape[0])
-
-## zip labels and inputs together?
 
 # ========== create datasets for k-fold cross-validation ==========
 
@@ -80,11 +79,11 @@ class Net(nn.Module):
         self.w4 = nn.Linear(20, 3)
 
     def forward(self, x):
-        x = self.w1(F.Sigmoid(self.w1(x)))
-        x = self.w2(F.Sigmoid(self.w2(x)))
-        x = self.w3(F.Sigmoid(self.w3(x)))
+        x = F.sigmoid(self.w1(x))
+        x = F.sigmoid(self.w2(x))
+        x = F.sigmoid(self.w3(x))
         x = self.w4(x)
-        return np.argmax(x)
+        return x
 
 net = Net()
 
@@ -94,9 +93,7 @@ optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
 # ========== for each fold: ==========
 
-# a = np.arange(9, -1, -1)     # a = array([9, 8, 7, 6, 5, 4, 3, 2, 1, 0])
-# b = a[np.arange(len(a))!=3]  # b = array([9, 8, 7, 5, 4, 3, 2, 1, 0])
-# which will, in general, be much faster than the list comprehension listed above.
+accuracies = []
 
 for k in range(0, K):
     valid_indices = folds[k]
@@ -104,6 +101,59 @@ for k in range(0, K):
 
 # ==================== ... train classifier ==========
 
+    n_epochs = 10
+    batch_size = 9
+    n_batches = int(len(train_indices)/9)
+
+    for epoch in range(n_epochs): 
+
+        running_loss = 0.0
+
+        for b in range(n_batches):
+
+            batch_indices = train_indices[b*batch_size:(b+1)*batch_size]
+            # nSamples x nChannels
+            train_inputs = inputs[batch_indices,:]
+            train_labels = labels[batch_indices,]
+
+            # wrap them in Variable
+            train_inputs = Variable(torch.FloatTensor(train_inputs))
+            train_labels = Variable(torch.LongTensor(train_labels))
+
+            # zero the parameter gradients
+            optimizer.zero_grad()
+
+            # forward + backward + optimize
+            outputs = net(train_inputs)
+            loss = criterion(outputs, train_labels)
+            loss.backward()
+            optimizer.step()
+
+            # print statistics
+            running_loss += loss.data[0]
+            if b % 20 == 19:    # print every 10 mini-batches
+                print('[%d, %5d] loss: %.3f' %
+                      (epoch + 1, b + 1, running_loss / 2000))
+                running_loss = 0.0
+
 # ==================== ... compute accuracy ==========
 
+    correct = 0
+    total = 0
+    valid_inputs = inputs[valid_indices,:]
+    valid_labels = labels[valid_indices,]
+    
+    valid_inputs = Variable(torch.FloatTensor(valid_inputs))
+    outputs = net(valid_inputs)
+    _, predicted = torch.max(outputs.data, 1)
+    predicted = predicted.numpy().T[0]
+
+    total += valid_labels.shape[0]
+    correct += (predicted == valid_labels).sum()
+
+    accuracy = float(correct) / total
+    accuracies.append(accuracy)
+
 # ========== compute overall accuracy ==========
+
+print(np.mean(accuracies))
