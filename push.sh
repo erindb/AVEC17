@@ -3,6 +3,6 @@
 set -e
 git push
 wd=`pwd`
-cd ~/Dropbox/AVEC17/
+cd ~/Dropbox/Stanford\ AVEC\ Team\ Folder/AVEC17/data
 git pull
 cd $wd
