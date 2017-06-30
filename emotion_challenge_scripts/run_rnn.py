@@ -25,6 +25,8 @@ from write_predictions import write_predictions
 
 from os.path import join as pjoin
 
+from makext import make_name, get_index, make_xt
+
 # ================= Load features ================= 
 
 # Set folders here
@@ -32,56 +34,7 @@ path_test_predictions = "test_predictions/"
 b_test_available      = False  # If the test labels are not available, the predictions on test are written into the folder 'path_test_predictions'
 data_dir = "../data/AVEC_17_Emotion_Sub-Challenge"
 
-# Folders with provided features and labels
-path_audio_features = pjoin(data_dir, "audio_features_xbow_6s/")
-path_video_features = pjoin(data_dir, "video_features_xbow_6s/")
-path_text_features  = pjoin(data_dir, "text_features_xbow_6s/")
-path_labels         = pjoin(data_dir, "labels/")
-
-sr_labels = 0.1
-
-delay = 0.0
-b_audio = True
-b_video = True
-b_text  = True
-
-if len(argv)>1:
-    delay = float(argv[1])
-if len(argv)>2:    
-    b_audio = bool(int(argv[2]))
-    b_video = bool(int(argv[3]))
-    b_text  = bool(int(argv[4]))
-
-path_features = []
-if b_audio:
-    path_features.append( path_audio_features )
-if b_video:
-    path_features.append( path_video_features )
-if b_text:
-    path_features.append( path_text_features )
-
-if not b_test_available and not os.path.exists(path_test_predictions):
-    os.mkdir(path_test_predictions)
-
-# Compensate the delay (quick solution)
-shift = int(np.round(delay/sr_labels))
-shift = np.ones(len(path_features),dtype=int)*shift
-
-files_train = fnmatch.filter(os.listdir(path_features[0]), "Train*")  # Filenames are the same for audio, video, text & labels
-files_devel = fnmatch.filter(os.listdir(path_features[0]), "Devel*")
-files_test  = fnmatch.filter(os.listdir(path_features[0]), "Test*")
-
-# Load features and labels
-Train   = load_all( files_train, path_features, shift )
-Devel   = load_all( files_devel, path_features, shift )
-Train_L = load_all( files_train, [ path_labels ] )  # Labels are not shifted
-Devel_L = load_all( files_devel, [ path_labels ] )
-
-if b_test_available:
-    Test   = load_all( files_test, path_features, shift )
-    Test_L = load_all( files_test, [ path_labels ] )  # Test labels are not available in the challenge
-else:
-    Test   = load_all( files_test, path_features, shift, separate=True )  # Load test features separately to store the predictions in separate files
+print(make_xt(0, 1, data_dir))
 
 # ================= Run our model ================= 
 

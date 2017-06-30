@@ -16,15 +16,14 @@ def make_name(pNum):
 
 # Gets the row index of the time in the the csv file
 def get_index(t, reader, f):
-    reader.__next__()
-    step = float(reader.__next__()[1])  # Step is the second time stamp
+    reader.next()
+    step = float(reader.next()[1])  # Step is the second time stamp
     f.seek(0)
     return math.floor(t / step)  # Rounding down
 
 
 # Makes x(t) by taking all features and concatenating them into 1 torch Tensor.
-def make_xt(time, pNum):
-    dataset = '/Users/harrys/Dropbox (Your team)/AVEC17/data/AVEC_17_Emotion_Sub-Challenge'
+def make_xt(time, pNum, dataset):
     xt = np.float64([])
     folders = [folder for folder in os.listdir(dataset) if 'feature' in folder]
     for folder in folders:
