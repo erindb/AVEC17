@@ -28,7 +28,7 @@ from os.path import join as pjoin
 # Set folders here
 path_test_predictions = "test_predictions/"
 b_test_available      = False  # If the test labels are not available, the predictions on test are written into the folder 'path_test_predictions'
-data_dir = "../../data/AVEC_17_Emotion_Sub-Challenge"
+data_dir = "../data/AVEC_17_Emotion_Sub-Challenge"
 
 # Folders with provided features and labels
 path_audio_features = pjoin(data_dir, "audio_features_xbow_6s/")
