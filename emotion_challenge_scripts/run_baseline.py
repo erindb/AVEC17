@@ -23,15 +23,18 @@ from load_features     import load_all
 from calc_scores       import calc_scores
 from write_predictions import write_predictions
 
+from os.path import join as pjoin
+
 # Set folders here
 path_test_predictions = "test_predictions/"
 b_test_available      = False  # If the test labels are not available, the predictions on test are written into the folder 'path_test_predictions'
+data_dir = "../../data/AVEC_17_Emotion_Sub-Challenge"
 
 # Folders with provided features and labels
-path_audio_features = "audio_features_xbow_6s/"
-path_video_features = "video_features_xbow_6s/"
-path_text_features  = "text_features_xbow_6s/"
-path_labels         = "labels/"
+path_audio_features = pjoin(data_dir, "audio_features_xbow_6s/")
+path_video_features = pjoin(data_dir, "video_features_xbow_6s/")
+path_text_features  = pjoin(data_dir, "text_features_xbow_6s/")
+path_labels         = pjoin(data_dir, "labels/")
 
 sr_labels = 0.1
 
