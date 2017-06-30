@@ -94,6 +94,8 @@ else:
 
 
 ## fix me!!!
+# this is the basic format of how the output should look:
+
 # arousal scores
 scores_devel_A = np.array([[None, None, None], [None, None, None]])
 # valence scores
