@@ -46,9 +46,15 @@ def make_xt(time, pNum, dataset, split="train"):
 
 
 def get_num_timepoints(pNum, dataset, split="train"):
-    return load_features.get_num_lines(os.path.join(dataset, make_name(pNum, split)))
+    return load_features.get_num_lines(
+            os.path.join(dataset, "labels", make_name(pNum, split)))
 
+def run_tests():
+    assert(1756==get_num_timepoints(1, "../data/AVEC_17_Emotion_Sub-Challenge"))
+run_tests()
 
 # Runs t = 0, participant 1 as an example
 if __name__ == '__main__':
     print(make_xt(0, 1, "../data/AVEC_17_Emotion_Sub-Challenge"))
+    print(get_num_timepoints(1, "../data/AVEC_17_Emotion_Sub-Challenge"))
+
