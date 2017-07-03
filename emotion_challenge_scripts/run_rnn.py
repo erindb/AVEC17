@@ -41,11 +41,6 @@ print(make_xt(0, 1, data_dir))
 # try this?:
 # https://discuss.pytorch.org/t/rnn-for-sequence-prediction/182/15
 
-# different Ss have different # timesteps.
-# pytorch handles this best with padding and masks.
-# here's some information:
-# https://github.com/pytorch/pytorch/issues/517
-
 
 
 
