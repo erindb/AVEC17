@@ -32,7 +32,13 @@ def get_index(t, reader, f):
 
 
 # Makes x(t) by taking all features and concatenating them into 1 torch Tensor.
-def make_xt(time, pNum, dataset, split="train"):
+# fix me!!
+# change time to timestep (an integer)
+# and make a new parameter sample_rate (in Hz)
+def make_xt(timestep, pNum, dataset, split="train", sample_rate=10):
+    length_of_timestep = 1000/sample_rate
+    time = timestep*length_of_timestep
+    
     xt = np.float64([])
     folders = [folder for folder in os.listdir(dataset) if 'feature' in folder]
     for folder in folders:
