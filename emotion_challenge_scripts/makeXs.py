@@ -61,6 +61,13 @@ def make_xt(timestep, pNum, dataset, split="train", length_of_timestep=100):
             xt = np.append(xt, np.float64(next(itertools.islice(reader, ind, ind+1))[2:]))
     return xt
 
+def make_Xs(pNum, dataset, split="train", length_of_timestep=100):
+    None
+    # num_timestep = get_num_timesteps(subject_num, data_dir)
+    # print(num_timestep)
+    # x = np.array([[make_xt(timestep, subject_num, data_dir)] for timestep in range(num_timestep)])
+    # print(x.shape)
+
 
 """
 Each participant has a different number of timesteps
