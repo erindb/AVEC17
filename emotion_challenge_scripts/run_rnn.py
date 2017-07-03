@@ -25,7 +25,7 @@ from write_predictions import write_predictions
 
 from os.path import join as pjoin
 
-from makext import make_name, get_index, make_xt, get_num_timesteps
+from makext import make_xt, get_num_timesteps
 
 # ================= Load features ================= 
 
@@ -36,8 +36,9 @@ data_dir = "../data/AVEC_17_Emotion_Sub-Challenge"
 
 subject_num = 1
 num_timestep = get_num_timesteps(subject_num, data_dir)
-num_features =
-x = [make_xt(timestep, subject_num, data_dir) for timestep in range(num_timestep)]
+# num_features =
+x = np.array([[make_xt(timestep, subject_num, data_dir)] for timestep in range(num_timestep)])
+print(x.shape)
 
 
 
