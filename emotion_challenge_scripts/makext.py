@@ -16,7 +16,7 @@ import load_features
 
 
 # Returns a string of the filename given the participant number
-def make_name(pNum):
+def make_name(pNum, ):
     pStr = str(pNum)
     if pNum < 10:
         pStr = '0' + pStr
@@ -45,7 +45,7 @@ def make_xt(time, pNum, dataset):
     return torch.from_numpy(xt)
 
 
-def get_num_features(pNum, dataset):
+def get_num_timepoints(pNum, dataset):
     return load_features.get_num_lines(os.path.join(dataset, make_name(pNum)))
 
 
