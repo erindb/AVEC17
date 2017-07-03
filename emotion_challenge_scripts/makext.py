@@ -24,14 +24,14 @@ def make_name(pNum, split="train"):
 
 
 # Gets the row index of the time in the the csv file
-def time_to_timestep(time, reader, f):
+def seconds_to_timestep(time_in_seconds, reader, f):
     reader.next()
     step = float(reader.next()[1])  # Step is the second time stamp
     f.seek(0)
-    return math.floor(time / step)  # Rounding down
+    return int(math.floor(time_in_seconds / step))  # Rounding down
 
-def timestep_to_time(timestep, length_of_timestep):
-    return timestep*length_of_timestep
+def timestep_to_seconds(timestep, length_of_timestep):
+    return (timestep*length_of_timestep) / 1000
 
 
 """
@@ -46,7 +46,7 @@ length_of_timestep - in ms
 def make_xt(timestep, pNum, dataset, split="train", length_of_timestep=100):
     assert(split in ["train", "valid", "test"])
 
-    time = timestep_to_time(timestep, length_of_timestep)
+    time_in_seconds = timestep_to_seconds(timestep, length_of_timestep)
 
     xt = np.float64([])
     folders = [folder for folder in os.listdir(dataset) if 'feature' in folder]
@@ -55,7 +55,7 @@ def make_xt(timestep, pNum, dataset, split="train", length_of_timestep=100):
         fullName = os.path.join(dataset, folder, fname)
         with open(fullName, 'r') as file:
             reader = csv.reader(file, delimiter=';')
-            ind = time_to_timestep(time, reader, file)
+            ind = seconds_to_timestep(time_in_seconds, reader, file)
             xt = np.append(xt, np.float64(next(itertools.islice(reader, ind, ind+1))[2:]))
     return xt
 
