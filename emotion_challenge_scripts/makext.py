@@ -57,7 +57,7 @@ def make_xt(timestep, pNum, dataset, split="train", length_of_timestep=100):
             reader = csv.reader(file, delimiter=';')
             ind = time_to_timestep(time, reader, file)
             xt = np.append(xt, np.float64(next(itertools.islice(reader, ind, ind+1))[2:]))
-    return torch.from_numpy(xt)
+    return xt
 
 
 # fix me!!!
