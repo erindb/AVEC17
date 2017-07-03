@@ -15,7 +15,7 @@
 import os
 import fnmatch
 import numpy as np
-
+import torch
 from sys     import argv
 from sklearn import svm
 
@@ -25,7 +25,7 @@ from write_predictions import write_predictions
 
 from os.path import join as pjoin
 
-from makext import make_name, get_index, make_xt
+from makext import make_name, get_index, make_xt, get_num_timesteps
 
 # ================= Load features ================= 
 
@@ -34,7 +34,12 @@ path_test_predictions = "test_predictions/"
 b_test_available      = False  # If the test labels are not available, the predictions on test are written into the folder 'path_test_predictions'
 data_dir = "../data/AVEC_17_Emotion_Sub-Challenge"
 
-print(make_xt(0, 1, data_dir))
+subject_num = 1
+num_timestep = get_num_timesteps(subject_num, data_dir)
+num_features =
+x = [make_xt(timestep, subject_num, data_dir) for timestep in range(num_timestep)]
+
+
 
 # ================= Run our model ================= 
 
