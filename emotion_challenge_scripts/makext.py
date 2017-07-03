@@ -1,3 +1,11 @@
+#!/usr/bin/env python
+
+"""
+Loads in data...
+"""
+
+__author__      = "Harry Sha"
+
 import os
 import numpy as np
 import torch
