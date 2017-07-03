@@ -82,12 +82,12 @@ def get_num_timesteps(pNum, dataset, split="train", length_of_timestep=100):
 
 
 def run_tests():
-    assert(1756==get_num_timepoints(1, "../data/AVEC_17_Emotion_Sub-Challenge"))
+    assert(1756==get_num_timesteps(1, "../data/AVEC_17_Emotion_Sub-Challenge"))
 run_tests()
 
 
 def run_tests():
-    assert(1756==get_num_timepoints(1, "../data/AVEC_17_Emotion_Sub-Challenge"))
+    assert(1756==get_num_timesteps(1, "../data/AVEC_17_Emotion_Sub-Challenge"))
 run_tests()
 
 
