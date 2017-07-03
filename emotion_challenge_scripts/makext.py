@@ -24,21 +24,30 @@ def make_name(pNum, split="train"):
 
 
 # Gets the row index of the time in the the csv file
-def get_index(t, reader, f):
+def time_to_timestep(time, reader, f):
     reader.next()
     step = float(reader.next()[1])  # Step is the second time stamp
     f.seek(0)
-    return math.floor(t / step)  # Rounding down
+    return math.floor(time / step)  # Rounding down
+
+def timestep_to_time(timestep, length_of_timestep):
+    return timestep*length_of_timestep
 
 
-# Makes x(t) by taking all features and concatenating them into 1 torch Tensor.
-# fix me!!
-# change time to timestep (an integer)
-# and make a new parameter sample_rate (in Hz)
-def make_xt(timestep, pNum, dataset, split="train", sample_rate=10):
-    length_of_timestep = 1000/sample_rate
-    time = timestep*length_of_timestep
-    
+"""
+Makes x(t) by taking all features and concatenating them into 1 torch Tensor.
+
+timestep - Integer
+pNum - subject number (starts at 1)
+dataset - data directory for specific challenge
+split - train, valid, test
+length_of_timestep - in ms
+"""
+def make_xt(timestep, pNum, dataset, split="train", length_of_timestep=100):
+    assert(split in ["train", "valid", "test"])
+
+    time = timestep_to_time(timestep, length_of_timestep)
+
     xt = np.float64([])
     folders = [folder for folder in os.listdir(dataset) if 'feature' in folder]
     for folder in folders:
@@ -46,14 +55,14 @@ def make_xt(timestep, pNum, dataset, split="train", sample_rate=10):
         fullName = os.path.join(dataset, folder, fname)
         with open(fullName, 'r') as file:
             reader = csv.reader(file, delimiter=';')
-            ind = get_index(time, reader, file)
+            ind = time_to_timestep(time, reader, file)
             xt = np.append(xt, np.float64(next(itertools.islice(reader, ind, ind+1))[2:]))
     return torch.from_numpy(xt)
 
 
-def get_num_timepoints(pNum, dataset, split="train"):
-    return load_features.get_num_lines(
-            os.path.join(dataset, "labels", make_name(pNum, split)))
+# fix me!!!
+def get_num_timepoints(pNum, dataset, split="train", length_of_timestep=100):
+    return None
 
 def run_tests():
     assert(1756==get_num_timepoints(1, "../data/AVEC_17_Emotion_Sub-Challenge"))
