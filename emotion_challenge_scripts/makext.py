@@ -12,6 +12,7 @@ import torch
 import csv
 import math
 import itertools
+import load_features
 
 
 # Returns a string of the filename given the participant number
@@ -42,6 +43,10 @@ def make_xt(time, pNum, dataset):
             ind = get_index(time, reader, file)
             xt = np.append(xt, np.float64(next(itertools.islice(reader, ind, ind+1))[2:]))
     return torch.from_numpy(xt)
+
+
+def get_num_features(pNum, dataset):
+    return load_features.get_num_lines(os.path.join(dataset, make_name(pNum)))
 
 
 # Runs t = 0, participant 1 as an example
