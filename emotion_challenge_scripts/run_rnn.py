@@ -35,10 +35,58 @@ b_test_available      = False  # If the test labels are not available, the predi
 data_dir = "../data/AVEC_17_Emotion_Sub-Challenge"
 
 subject_num = 1
-num_timestep = get_num_timesteps(subject_num, data_dir)
+num_timestep = get_num_timesteps(subject_num, data_dir) #sequence length
 print(num_timestep)
 x = np.array([[make_xt(timestep, subject_num, data_dir)] for timestep in range(num_timestep)])
+
 print(x.shape)
+
+hidden_size = 4000
+batch_size = 1
+num_features = 8962
+seq_len = num_timestep
+
+x = np.random(1756, 1, 8962)
+x = torch_from_np(x)
+
+class Net(nn.module):
+    def __init__(self, features, cls_size):
+        super(Net, self).__init__()
+        self.rnn1 = nn.GRU(input_size=features,
+                           hidden_size=hidden_size,
+                           num_layers=1)
+        self.dense1 = nn.Linear(hidden_size, cls_size)
+
+    def forward(self, x, hidden):
+        x, hidden = self.rnn1(x, hidden)
+        x = x.select(0, maxlen-1).contiguous()
+        x = x.view(-1, hidden_size)
+        x = F.relu(self.dense1(x))
+        x = F.log_softmax(self.dense2(x))
+        return x, hidden
+
+    def init_hidden(self, batch_size=batch_size):
+        weight = next(self.parameters()).data
+        return Variable(weight.new(1, batch_size, hidden_size).zero_())
+
+model = Net()
+model.init_hidden()
+hidden = model.init_hidden()
+criterion = nn.NLLLoss()
+optimizer = optim.Adam(model.parameters(), lr=lr)
+
+#...
+def train():
+    model.train()
+    hidden = model.init_hidden()
+    for epoch in range(len(sentences) // batch_size):
+        X_batch = var(torch.FloatTensor(X[:, epoch*batch_size: (epoch+1)*batch_size, :]))
+        y_batch = var(torch.LongTensor(y[epoch*batch_size: (epoch+1)*batch_size]))
+        model.zero_grad()
+        output, hidden = model(X_batch, var_pair(hidden))
+        loss = criterion(output, y_batch)
+        loss.backward()
+        optimizer.step()
 
 
 
