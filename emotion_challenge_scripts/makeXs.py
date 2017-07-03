@@ -44,6 +44,8 @@ split - train, valid, test
 length_of_timestep - in ms
 """
 def make_xt(timestep, pNum, dataset, split="train", length_of_timestep=100):
+    if timestep % 100 == 0:
+        print(timestep)
     assert(split in ["train", "valid", "test"])
 
     time_in_seconds = timestep_to_seconds(timestep, length_of_timestep)

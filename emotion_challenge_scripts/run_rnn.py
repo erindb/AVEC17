@@ -36,7 +36,7 @@ data_dir = "../data/AVEC_17_Emotion_Sub-Challenge"
 
 subject_num = 1
 num_timestep = get_num_timesteps(subject_num, data_dir)
-# num_features =
+print(num_timestep)
 x = np.array([[make_xt(timestep, subject_num, data_dir)] for timestep in range(num_timestep)])
 print(x.shape)
 
