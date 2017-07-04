@@ -63,6 +63,20 @@ def make_xt(timestep, pNum, dataset, split="train", length_of_timestep=100):
 
 def make_Xs(pNum, data_dir, split="train", length_of_timestep=100,
     useAudio=True, useVideo=True, useText=True):
+    '''
+    returns labelsT, featuresT
+
+    1st column of labelsT is the time
+    2nd column of labelsT is valence [same order as they are in the labels file]
+    3rd column of labelsT is arousal [same order as they are in the labels file]
+    4th column of labelsT is liking [same order as they are in the labels file]
+
+    1st column of featuresT is the time
+    2nd column onwards are all the features
+
+    - written by desmond, bug him if any bugs.
+    '''
+
     # data_dir="../data/AVEC_17_Emotion_Sub-Challenge"
     path_labels = os.path.join(data_dir, "labels/")
     path_features = []
@@ -89,7 +103,7 @@ def make_Xs(pNum, data_dir, split="train", length_of_timestep=100,
     if not maxTimePoints:
         maxTimePoints = -1  # reach here if reading from the test set; we don't know how long
 
-    xt = np.float64([])
+    featuresT = np.float64([])
 
     if useAudio:
         path_features.append( os.path.join(data_dir, "audio_features_xbow_6s/") )
@@ -113,7 +127,7 @@ def make_Xs(pNum, data_dir, split="train", length_of_timestep=100,
             numFeatures = len(myRow) - 1
             assert(numFeatures * numRows == len(theseFeatures))
         theseFeatures = theseFeatures.reshape(numRows, numFeatures)
-        
+
         if not np.isclose(theseFeatures[1, 0] - theseFeatures[0, 0], length_of_timestep):
             # need interpolation.
             ### --- interpolate --- ###
@@ -124,13 +138,13 @@ def make_Xs(pNum, data_dir, split="train", length_of_timestep=100,
             # ... todo: FIX ME
             print("Oops you reached here; interpolation isn't working yet. wah wah.")
 
-        if xt.shape==(0,):
-            xt = theseFeatures
+        if featuresT.shape==(0,):
+            featuresT = theseFeatures
         else:
-            xt = np.append(xt, theseFeatures[:, 1:], axis=1)
+            featuresT = np.append(featuresT, theseFeatures[:, 1:], axis=1)
 
     # return the labels and the features
-    return labelsT, xt
+    return labelsT, featuresT
 
 
 """
