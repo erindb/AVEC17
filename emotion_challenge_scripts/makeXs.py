@@ -37,11 +37,11 @@ def timestep_to_seconds(timestep, length_of_timestep):
 """
 Makes x(t) by taking all features and concatenating them into 1 torch Tensor.
 
-timestep - Integer
-pNum - subject number (starts at 1)
-dataset - data directory for specific challenge
-split - train, valid, test
-length_of_timestep - in ms
+    timestep - Integer
+    pNum - subject number (starts at 1)
+    dataset - data directory for specific challenge
+    split - train, valid, test
+    length_of_timestep - in ms
 """
 def make_xt(timestep, pNum, dataset, split="train", length_of_timestep=100):
     if timestep % 100 == 0:
@@ -61,21 +61,85 @@ def make_xt(timestep, pNum, dataset, split="train", length_of_timestep=100):
             xt = np.append(xt, np.float64(next(itertools.islice(reader, ind, ind+1))[2:]))
     return xt
 
-def make_Xs(pNum, dataset, split="train", length_of_timestep=100):
-    None
-    # num_timestep = get_num_timesteps(subject_num, data_dir)
-    # print(num_timestep)
-    # x = np.array([[make_xt(timestep, subject_num, data_dir)] for timestep in range(num_timestep)])
-    # print(x.shape)
+def make_Xs(pNum, data_dir, split="train", length_of_timestep=100,
+    useAudio=True, useVideo=True, useText=True):
+    # data_dir="../data/AVEC_17_Emotion_Sub-Challenge"
+    path_labels = os.path.join(data_dir, "labels/")
+    path_features = []
+    pNumFilename = make_name(pNum, split)
+
+    if length_of_timestep == 100:
+        length_of_timestep = 0.1  # I want this in seconds...
+
+    ### --- reads in label if split is not "test" --- ###
+    labelsT = np.float64([])
+    if split != 'test':
+        fullName = os.path.join(path_labels, pNumFilename)
+        with open(fullName, 'r') as thisFile:
+            myReader = csv.reader(thisFile, delimiter=';')
+            numRows = 0
+            for myRow in myReader:
+                numRows += 1
+                labelsT = np.append(labelsT, np.float64(myRow[1:]), axis=0)
+            numLabels = len(myRow) - 1
+            assert(numLabels * numRows == len(labelsT))
+        labelsT = labelsT.reshape(numRows, numLabels)
+        maxTimePoints = labelsT.shape[0]
+
+    if not maxTimePoints:
+        maxTimePoints = -1  # reach here if reading from the test set; we don't know how long
+
+    xt = np.float64([])
+
+    if useAudio:
+        path_features.append( os.path.join(data_dir, "audio_features_xbow_6s/") )
+    if useVideo:
+        path_features.append( os.path.join(data_dir, "video_features_xbow_6s/") )
+    if useText:
+        path_features.append( os.path.join(data_dir, "text_features_xbow_6s/") )
+
+    ### --- loop to read in features --- ###
+    for thisFolder in path_features:
+        print("reading in features from " + thisFolder)
+        theseFeatures = np.float64([])
+        fullName = os.path.join(thisFolder, pNumFilename)
+        ### --- first, read in ALL rows. Interpolate later --- ###
+        with open(fullName, 'r') as thisFile:
+            myReader = csv.reader(thisFile, delimiter=';')
+            numRows = 0
+            for myRow in myReader:
+                numRows += 1
+                theseFeatures = np.append(theseFeatures, np.float64(myRow[1:]), axis=0)
+            numFeatures = len(myRow) - 1
+            assert(numFeatures * numRows == len(theseFeatures))
+        theseFeatures = theseFeatures.reshape(numRows, numFeatures)
+        
+        if not np.isclose(theseFeatures[1, 0] - theseFeatures[0, 0], length_of_timestep):
+            # need interpolation.
+            ### --- interpolate --- ###
+            # use numpy.interp function
+            #     newFeatureVector = numpy.interp ( newTimeVector, oldTimeVector, oldFeatureVector )
+            totalTimeSteps = int((theseFeatures[-1,0])/length_of_timestep)
+            newTimeVector = [float(x)*length_of_timestep for x in xrange(totalTimeSteps)]
+            # ... todo: FIX ME
+            print("Oops you reached here; interpolation isn't working yet. wah wah.")
+
+        if xt.shape==(0,):
+            xt = theseFeatures
+        else:
+            xt = np.append(xt, theseFeatures[:, 1:], axis=1)
+
+    # return the labels and the features
+    return labelsT, xt
 
 
 """
 Each participant has a different number of timesteps
 
-pNum - subject number (starts at 1)
-dataset - data directory for specific challenge
-split - train, valid, test
-length_of_timestep - in ms
+    pNum - subject number (starts at 1)
+    dataset - data directory for specific challenge
+    split - train, valid, test
+    length_of_timestep - in ms
 """
 def get_num_timesteps(pNum, dataset, split="train", length_of_timestep=100):
     assert(split in ["train", "valid", "test"])
