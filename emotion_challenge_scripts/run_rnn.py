@@ -16,6 +16,9 @@ import os
 import fnmatch
 import numpy as np
 import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torch.autograd import Variable
 from sys     import argv
 from sklearn import svm
 
@@ -25,7 +28,7 @@ from write_predictions import write_predictions
 
 from os.path import join as pjoin
 
-from makext import make_xt, get_num_timesteps
+# from makext import make_xt, get_num_timesteps
 
 # ================= Load features ================= 
 
@@ -34,13 +37,60 @@ path_test_predictions = "test_predictions/"
 b_test_available      = False  # If the test labels are not available, the predictions on test are written into the folder 'path_test_predictions'
 data_dir = "../data/AVEC_17_Emotion_Sub-Challenge"
 
-subject_num = 1
-num_timestep = get_num_timesteps(subject_num, data_dir)
-print(num_timestep)
-x = np.array([[make_xt(timestep, subject_num, data_dir)] for timestep in range(num_timestep)])
-print(x.shape)
+hidden_size = 4000
+batch_size = 1
+num_epochs = 2
+X = np.random.rand(1756, 1, 8962)
+
+seq_len = X.shape[0]
+num_features = X.shape[2]
+X = torch.from_numpy(X)
+Y = np.random.rand(1756, 1, 1) # do later
+Y = torch.from_numpy(Y)
+Y = Variable(Y)
+X = Variable(X)
 
 
+class Net(nn.Module):
+    def __init__(self, features):
+        super(Net, self).__init__()
+        self.rnn1 = nn.GRU(input_size=features,
+                           hidden_size=hidden_size,
+                           num_layers=1)
+        self.W1 = nn.Linear(hidden_size, 50)
+        self.W2 = nn.Linear(50, 1)
+
+
+    def forward(self, x, hidden):
+        x, hidden = self.rnn1(x, hidden)
+        h2 = F.relu(self.W1(hidden))
+        y = self.W2(h2)
+        return y, hidden
+
+    def init_hidden(self, batch_size=batch_size):
+        weight = next(self.parameters()).data
+        return Variable(weight.new(1, batch_size, hidden_size).zero_())
+
+model = Net(num_features)
+model.init_hidden()
+hidden = model.init_hidden()
+criterion = nn.MSELoss()
+
+optimizer = torch.optim.Adam(model.parameters())
+
+#...
+def train():
+    model.train()
+    hidden = model.init_hidden()
+    model.zero_grad()
+    hidden = hidden.double()
+    print(type(hidden.data))
+    output, hidden = model.forward(X, hidden) # var_pair??
+    loss = criterion(output, Y)
+    loss.backward()
+    optimizer.step()
+
+train()
 
 # ================= Run our model ================= 
 
