@@ -27,8 +27,7 @@ from calc_scores       import calc_scores
 from write_predictions import write_predictions
 
 from os.path import join as pjoin
-
-# from makext import make_xt, get_num_timesteps
+from makeXs import make_Xs, get_num_timesteps
 
 # ================= Load features ================= 
 
@@ -40,16 +39,22 @@ data_dir = "../data/AVEC_17_Emotion_Sub-Challenge"
 hidden_size = 4000
 batch_size = 1
 num_epochs = 2
-X = np.random.rand(1756, 1, 8962)
+Y, X = make_Xs(1, data_dir, useAudio=True, useVideo=False, useText=False)
+# X = np.random.rand(1756, 1, 8962)
+# exclude first column (time)
+X = X[:, 1:]
+Y = Y[:, 1:]
+
+X = X.reshape(X.shape[0], 1, X.shape[1])
+Y = Y.reshape(Y.shape[0], 1, Y.shape[1])
 
 seq_len = X.shape[0]
 num_features = X.shape[2]
-X = torch.from_numpy(X)
-Y = np.random.rand(1756, 1, 1) # do later
-Y = torch.from_numpy(Y)
-Y = Variable(Y)
-X = Variable(X)
 
+X = torch.from_numpy(X)
+Y = torch.from_numpy(Y)
+X = Variable(X)
+Y = Variable(Y)
 
 class Net(nn.Module):
     def __init__(self, features):
@@ -63,7 +68,7 @@ class Net(nn.Module):
 
     def forward(self, x, hidden):
         x, hidden = self.rnn1(x, hidden)
-        h2 = F.relu(self.W1(hidden))
+        h2 = F.relu(self.W1(x))
         y = self.W2(h2)
         return y, hidden
 
