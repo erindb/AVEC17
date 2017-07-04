@@ -27,8 +27,7 @@ from calc_scores       import calc_scores
 from write_predictions import write_predictions
 
 from os.path import join as pjoin
-
-# from makext import make_xt, get_num_timesteps
+from makeXs import make_Xs, get_num_timesteps
 
 # ================= Load features ================= 
 
@@ -41,7 +40,18 @@ hidden_size = 10 #4000
 h2_size = 10 #50
 batch_size = 1
 num_epochs = 2
-X_np = np.random.rand(1756, 1, 8962)
+
+# # random input
+# X_np = np.random.rand(1756, 1, 8962)
+
+# real input
+Y_np, X_np = make_Xs(1, data_dir, useAudio=True, useVideo=False, useText=False)
+# X = np.random.rand(1756, 1, 8962)
+# exclude first column (time)
+X_np = X_np[:, 1:]
+Y_np = Y_np[:, 1:]
+X_np = X_np.reshape(X_np.shape[0], 1, X_np.shape[1])
+Y_np = Y_np.reshape(Y_np.shape[0], 1, Y_np.shape[1])
 
 seq_len = X_np.shape[0]
 num_features = X_np.shape[2]
@@ -52,7 +62,6 @@ X = Variable(X_tensor)
 Y_np = np.random.rand(1756, 1, 1) # do later
 Y_tensor = torch.from_numpy(Y_np).float()
 Y = Variable(Y_tensor)
-
 
 class Net(nn.Module):
     def __init__(self):
@@ -69,6 +78,7 @@ class Net(nn.Module):
 
         h1 = x.view(-1, hidden_size)
         h2 = F.relu(self.W1(h1))
+
         y = self.W2(h2)
 
         return y, hidden
