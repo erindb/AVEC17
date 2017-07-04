@@ -37,43 +37,48 @@ path_test_predictions = "test_predictions/"
 b_test_available      = False  # If the test labels are not available, the predictions on test are written into the folder 'path_test_predictions'
 data_dir = "../data/AVEC_17_Emotion_Sub-Challenge"
 
-hidden_size = 4000
+hidden_size = 10 #4000
+h2_size = 10 #50
 batch_size = 1
 num_epochs = 2
-X = np.random.rand(1756, 1, 8962)
+X_np = np.random.rand(1756, 1, 8962)
 
-seq_len = X.shape[0]
-num_features = X.shape[2]
-X = torch.from_numpy(X)
-Y = np.random.rand(1756, 1, 1) # do later
-Y = torch.from_numpy(Y)
-Y = Variable(Y)
-X = Variable(X)
+seq_len = X_np.shape[0]
+num_features = X_np.shape[2]
+
+X_tensor = torch.from_numpy(X_np).float()
+X = Variable(X_tensor)
+
+Y_np = np.random.rand(1756, 1, 1) # do later
+Y_tensor = torch.from_numpy(Y_np).float()
+Y = Variable(Y_tensor)
 
 
 class Net(nn.Module):
-    def __init__(self, features):
+    def __init__(self):
         super(Net, self).__init__()
-        self.rnn1 = nn.GRU(input_size=features,
+        self.rnn1 = nn.GRU(input_size=num_features,
                            hidden_size=hidden_size,
                            num_layers=1)
-        self.W1 = nn.Linear(hidden_size, 50)
-        self.W2 = nn.Linear(50, 1)
+        self.W1 = nn.Linear(hidden_size, h2_size)
+        self.W2 = nn.Linear(h2_size, 1)
 
 
     def forward(self, x, hidden):
         x, hidden = self.rnn1(x, hidden)
-        h2 = F.relu(self.W1(hidden))
+
+        h1 = x.view(-1, hidden_size)
+        h2 = F.relu(self.W1(h1))
         y = self.W2(h2)
+
         return y, hidden
 
     def init_hidden(self, batch_size=batch_size):
         weight = next(self.parameters()).data
         return Variable(weight.new(1, batch_size, hidden_size).zero_())
+        # return Variable(torch.from_numpy(np.random.rand(1,1,hidden_size)))
 
-model = Net(num_features)
-model.init_hidden()
-hidden = model.init_hidden()
+model = Net()
 criterion = nn.MSELoss()
 
 optimizer = torch.optim.Adam(model.parameters())
@@ -82,10 +87,9 @@ optimizer = torch.optim.Adam(model.parameters())
 def train():
     model.train()
     hidden = model.init_hidden()
+    # for each batch
     model.zero_grad()
-    hidden = hidden.double()
-    print(type(hidden.data))
-    output, hidden = model.forward(X, hidden) # var_pair??
+    output, hidden = model.forward(X, hidden)
     loss = criterion(output, Y)
     loss.backward()
     optimizer.step()
