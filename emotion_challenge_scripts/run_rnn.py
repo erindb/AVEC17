@@ -17,6 +17,7 @@ import fnmatch
 import numpy as np
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torch.autograd import Variable
 from sys     import argv
 from sklearn import svm
@@ -51,26 +52,26 @@ X = Variable(X)
 
 
 class Net(nn.Module):
-    def __init__(self, features, cls_size):
+    def __init__(self, features):
         super(Net, self).__init__()
         self.rnn1 = nn.GRU(input_size=features,
                            hidden_size=hidden_size,
                            num_layers=1)
-        self.dense1 = nn.Linear(hidden_size, cls_size)
+        self.W1 = nn.Linear(hidden_size, 50)
+        self.W2 = nn.Linear(50, 1)
+
 
     def forward(self, x, hidden):
         x, hidden = self.rnn1(x, hidden)
-        x = x.select(0, maxlen-1).contiguous()
-        x = x.view(-1, hidden_size)
-        x = F.relu(self.dense1(x))
-        x = F.log_softmax(self.dense2(x))
-        return x, hidden
+        h2 = F.relu(self.W1(hidden))
+        y = self.W2(h2)
+        return y, hidden
 
     def init_hidden(self, batch_size=batch_size):
         weight = next(self.parameters()).data
         return Variable(weight.new(1, batch_size, hidden_size).zero_())
 
-model = Net(num_features, seq_len)
+model = Net(num_features)
 model.init_hidden()
 hidden = model.init_hidden()
 criterion = nn.MSELoss()
@@ -82,6 +83,8 @@ def train():
     model.train()
     hidden = model.init_hidden()
     model.zero_grad()
+    hidden = hidden.double()
+    print(type(hidden.data))
     output, hidden = model.forward(X, hidden) # var_pair??
     loss = criterion(output, Y)
     loss.backward()
