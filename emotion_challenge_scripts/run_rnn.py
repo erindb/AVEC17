@@ -113,7 +113,7 @@ class DataLoader():
 #     return X, Y, num_features, seq_len
 
 # real input
-trainLoader = DataLoader(pNum = 1, data_dir, useAudio=True, 
+trainLoader = DataLoader(pNum = 1, data_dir=data_dir, useAudio=True, 
     useVideo=False, useText=False)
 X, Y, num_features, seq_len = trainLoader.read_data('arousal')
 
@@ -170,7 +170,7 @@ train()
 # https://discuss.pytorch.org/t/rnn-for-sequence-prediction/182/15
 
 def test():
-    testLoader = DataLoader(pNum = 1, data_dir, split="devel", useAudio=True, 
+    testLoader = DataLoader(pNum = 1, data_dir=data_dir, split="devel", useAudio=True, 
         useVideo=False, useText=False)
     X, Y, num_features, seq_len = testLoader.read_data('arousal')
 
