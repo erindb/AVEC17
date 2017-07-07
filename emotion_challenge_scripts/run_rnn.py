@@ -100,12 +100,15 @@ def train():
     model.train()
     hidden = model.init_hidden()
     # for each batch
-    model.zero_grad()
-    output, hidden = model.forward(X, hidden)
-    loss = criterion(output, Y)
-    loss.backward()
-    optimizer.step()
-    print(loss.data[0])
+
+    for epoch in range(num_epochs):
+        model.zero_grad()
+        output, hidden = model.forward(X, hidden)
+        loss = criterion(output, Y)
+        print ('Epoch [%d/%d], Loss: %.4f' 
+                   %(epoch+1, num_epochs, loss.data[0]))        
+        loss.backward(retain_variables=True)
+        optimizer.step()
 
 train()
 

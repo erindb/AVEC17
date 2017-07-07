@@ -20,7 +20,7 @@ def make_name(pNum, split="train"):
     pStr = str(pNum)
     if pNum < 10:
         pStr = '0' + pStr
-    return 'Train_' + pStr + '.csv'
+    return split.capitalize() + '_' + pStr + '.csv'
 
 
 # Gets the row index of the time in the the csv file
@@ -46,7 +46,7 @@ Makes x(t) by taking all features and concatenating them into 1 torch Tensor.
 def make_xt(timestep, pNum, dataset, split="train", length_of_timestep=100):
     if timestep % 100 == 0:
         print(timestep)
-    assert(split in ["train", "valid", "test"])
+    assert(split in ["train", "devel", "test"])
 
     time_in_seconds = timestep_to_seconds(timestep, length_of_timestep)
 
