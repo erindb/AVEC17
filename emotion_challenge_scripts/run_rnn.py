@@ -46,36 +46,76 @@ torch.manual_seed(123)
 # # random input
 # X_np = np.random.rand(1756, 1, 8962)
 
-def read_data(pNum, data_dir, split="train", length_of_timestep=100,
-    useAudio=True, useVideo=True, useText=True):
 
-    Y_np, X_np = make_Xs(pNum=pNum, data_dir=data_dir, split=split,
-                         length_of_timestep=length_of_timestep,
-                         useAudio=useAudio, useVideo=useVideo,
-                         useText=useText)
+class DataLoader():
+    def __init__(self, pNum, data_dir, split="train", length_of_timestep=100,
+        useAudio=True, useVideo=True, useText=True):
+        self.labelDict = {'arousal': 1, 'valence': 2, 'liking': 3}
+        self.Y_np, self.X_np = make_Xs(pNum=pNum, data_dir=data_dir, split=split,
+                             length_of_timestep=length_of_timestep,
+                             useAudio=useAudio, useVideo=useVideo,
+                             useText=useText)
 
-    # X = np.random.rand(1756, 1, 8962)
-    # exclude first column (time)
-    X_np = X_np[:, 1:]
-    Y_np = Y_np[:, 1]
-    X_np = X_np.reshape(X_np.shape[0], 1, X_np.shape[1])
-    Y_np = Y_np.reshape(Y_np.shape[0], 1, 1)
+    def read_data(labelType):
+        # label_num = 1, 2 or 3.
+        assert (labelType in self.labelDict)
+        
+        label_num = self.labelDict[labelType]
 
-    seq_len = X_np.shape[0]
-    num_features = X_np.shape[2]
+        # X = np.random.rand(1756, 1, 8962)
+        # exclude first column (time)
+        X_np = self.X_np[:, 1:]
+        Y_np = self.Y_np[:, label_num]
 
-    X_tensor = torch.from_numpy(X_np).float()
-    X = Variable(X_tensor)
+        X_np = X_np.reshape(X_np.shape[0], 1, X_np.shape[1])
+        Y_np = Y_np.reshape(Y_np.shape[0], 1, 1)
 
-    # Y_np = np.random.rand(1756, 1, 1) # do later
-    Y_tensor = torch.from_numpy(Y_np).float()
-    Y = Variable(Y_tensor)
+        seq_len = X_np.shape[0]
+        num_features = X_np.shape[2]
 
-    return X, Y, num_features, seq_len
+        X_tensor = torch.from_numpy(X_np).float()
+        X = Variable(X_tensor)
+
+        # Y_np = np.random.rand(1756, 1, 1) # do later
+        Y_tensor = torch.from_numpy(Y_np).float()
+        Y = Variable(Y_tensor)
+
+        return X, Y, num_features, seq_len
+
+
+
+
+# def read_data(pNum, data_dir, split="train", length_of_timestep=100,
+#     useAudio=True, useVideo=True, useText=True):
+
+#     Y_np, X_np = make_Xs(pNum=pNum, data_dir=data_dir, split=split,
+#                          length_of_timestep=length_of_timestep,
+#                          useAudio=useAudio, useVideo=useVideo,
+#                          useText=useText)
+
+#     # X = np.random.rand(1756, 1, 8962)
+#     # exclude first column (time)
+#     X_np = X_np[:, 1:]
+#     Y_np = Y_np[:, 1]
+#     X_np = X_np.reshape(X_np.shape[0], 1, X_np.shape[1])
+#     Y_np = Y_np.reshape(Y_np.shape[0], 1, 1)
+
+#     seq_len = X_np.shape[0]
+#     num_features = X_np.shape[2]
+
+#     X_tensor = torch.from_numpy(X_np).float()
+#     X = Variable(X_tensor)
+
+#     # Y_np = np.random.rand(1756, 1, 1) # do later
+#     Y_tensor = torch.from_numpy(Y_np).float()
+#     Y = Variable(Y_tensor)
+
+#     return X, Y, num_features, seq_len
 
 # real input
-X, Y, num_features, seq_len = read_data(1, data_dir, useAudio=True,
-                                        useVideo=False, useText=False)
+trainLoader = DataLoader(pNum = 1, data_dir, useAudio=True, 
+    useVideo=False, useText=False)
+X, Y, num_features, seq_len = trainLoader.read_data('arousal')
 
 class Net(nn.Module):
     def __init__(self):
@@ -130,9 +170,9 @@ train()
 # https://discuss.pytorch.org/t/rnn-for-sequence-prediction/182/15
 
 def test():
-    X, Y, num_features, seq_len = read_data(1, data_dir, split="devel",
-                                            useAudio=True, useVideo=False,
-                                            useText=False)
+    testLoader = DataLoader(pNum = 1, data_dir, split="devel", useAudio=True, 
+        useVideo=False, useText=False)
+    X, Y, num_features, seq_len = testLoader.read_data('arousal')
 
     hidden = model.init_hidden()
 
