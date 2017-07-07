@@ -74,7 +74,7 @@ def read_data(pNum, data_dir, split="train", length_of_timestep=100,
     return X, Y, num_features, seq_len
 
 # real input
-Y, X, num_features, seq_len = read_data(1, data_dir, useAudio=True,
+X, Y, num_features, seq_len = read_data(1, data_dir, useAudio=True,
                                         useVideo=False, useText=False)
 
 class Net(nn.Module):
@@ -130,23 +130,10 @@ train()
 # https://discuss.pytorch.org/t/rnn-for-sequence-prediction/182/15
 
 def test():
-    Y_np, X_np = make_Xs(1, data_dir, useAudio=True, useVideo=False, useText=False)
-    # X = np.random.rand(1756, 1, 8962)
-    # exclude first column (time)
-    X_np = X_np[:, 1:]
-    Y_np = Y_np[:, 1]
-    X_np = X_np.reshape(X_np.shape[0], 1, X_np.shape[1])
-    Y_np = Y_np.reshape(Y_np.shape[0], 1, 1)
+    X, Y, num_features, seq_len = read_data(1, data_dir, split="devel",
+                                            useAudio=True, useVideo=False,
+                                            useText=False)
 
-    seq_len = X_np.shape[0]
-    num_features = X_np.shape[2]
-
-    X_tensor = torch.from_numpy(X_np).float()
-    X = Variable(X_tensor)
-
-    # Y_np = np.random.rand(1756, 1, 1) # do later
-    Y_tensor = torch.from_numpy(Y_np).float()
-    Y = Variable(Y_tensor)
     hidden = model.init_hidden()
 
     output, hidden = model.forward(X, hidden)
