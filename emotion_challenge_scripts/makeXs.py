@@ -148,6 +148,11 @@ def make_Xs(pNum, data_dir, split="train", length_of_timestep=100,
     # return the labels and the features
     return labelsT, featuresT
 
+"""
+Desmond, fix me!!!
+"""
+def makeX():
+    return None
 
 """
 Each participant has a different number of timesteps
