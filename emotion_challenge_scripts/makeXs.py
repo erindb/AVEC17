@@ -67,8 +67,8 @@ def make_Xs(pNum, data_dir, split="train", length_of_timestep=100,
     returns labelsT, featuresT
 
     1st column of labelsT is the time
-    2nd column of labelsT is valence [same order as they are in the labels file]
-    3rd column of labelsT is arousal [same order as they are in the labels file]
+    2nd column of labelsT is arousal [same order as they are in the labels file]
+    3rd column of labelsT is valence [same order as they are in the labels file]
     4th column of labelsT is liking [same order as they are in the labels file]
 
     1st column of featuresT is the time
@@ -114,7 +114,7 @@ def make_Xs(pNum, data_dir, split="train", length_of_timestep=100,
 
     ### --- loop to read in features --- ###
     for thisFolder in path_features:
-        print("makeXs: reading in __" + split + "__ features from " + thisFolder)
+        print("makeXs: reading in __" + split + "__ features from " + thisFolder[(len(data_dir)+1):])
         theseFeatures = np.float64([])
         fullName = os.path.join(thisFolder, pNumFilename)
         ### --- first, read in ALL rows. Interpolate later --- ###
