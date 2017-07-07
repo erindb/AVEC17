@@ -169,17 +169,18 @@ train()
 # try this?:
 # https://discuss.pytorch.org/t/rnn-for-sequence-prediction/182/15
 
-def test():
-    testLoader = DataLoader(pNum = 1, data_dir=data_dir, split="devel", useAudio=True, 
-        useVideo=False, useText=False)
-    X, Y, num_features, seq_len = testLoader.read_data('arousal')
+testLoader = DataLoader(pNum = 1, data_dir=data_dir, split="devel",
+                        useAudio=True, useVideo=False, useText=False)
+
+def test(labelType):
+    X, Y, num_features, seq_len = testLoader.read_data(labelType)
 
     hidden = model.init_hidden()
 
     output, hidden = model.forward(X, hidden)
     return calc_scores(output.data.numpy(), Y.data.numpy())
 
-test_scores = test()
+test_scores = test("arousal")
 
 
 ## fix me!!!
