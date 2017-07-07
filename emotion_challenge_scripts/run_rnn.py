@@ -56,7 +56,7 @@ class DataLoader():
                              useAudio=useAudio, useVideo=useVideo,
                              useText=useText)
 
-    def read_data(labelType):
+    def read_data(self, labelType):
         # label_num = 1, 2 or 3.
         assert (labelType in self.labelDict)
         
