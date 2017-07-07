@@ -113,7 +113,8 @@ class Net(nn.Module):
         return Variable(weight.new(1, batch_size, hidden_size).zero_())
         # return Variable(torch.from_numpy(np.random.rand(1,1,hidden_size)))
 
-models = {"arousal": Net(), "valence": Net(), "liking": Net()}
+labelTypes = ["arousal", "valence", "liking"]
+models = {labelType: Net() for labelType in labelTypes}
 
 criterion = nn.MSELoss()
 
@@ -138,7 +139,8 @@ def train(labelType):
         loss.backward(retain_variables=True)
         optimizer.step()
 
-train("arousal")
+for labelType in labelTypes:
+    train(labelType)
 
 # try this?:
 # https://discuss.pytorch.org/t/rnn-for-sequence-prediction/182/15
@@ -150,24 +152,22 @@ def test(labelType):
     X, Y, num_features, seq_len = testLoader.read_data(labelType)
 
     model = models[labelType]
-    
+
     hidden = model.init_hidden()
 
     output, hidden = model.forward(X, hidden)
     return calc_scores(output.data.numpy(), Y.data.numpy())
-
-test_scores = test("arousal")
 
 
 ## fix me!!!
 # this is the basic format of how the output should look:
 
 # arousal scores
-scores_devel_A = np.array([[None, None, None], [None, None, None]])
+scores_devel_A = np.array([test("arousal")])
 # valence scores
-scores_devel_V = np.array([test_scores])
+scores_devel_V = np.array([test("valence")])
 # liking scores
-scores_devel_L = np.array([[None, None, None], [None, None, None]])
+scores_devel_L = np.array([test("liking")])
 
 ## what follows is unchanged from baseline
 
