@@ -137,10 +137,9 @@ def test():
     hidden = model.init_hidden()
 
     output, hidden = model.forward(X, hidden)
-    loss = criterion(output, Y)
-    print(loss.data[0])
+    return calc_scores(output.data.numpy(), Y.data.numpy())
 
-test()
+test_scores = test()
 
 
 ## fix me!!!
@@ -149,7 +148,7 @@ test()
 # arousal scores
 scores_devel_A = np.array([[None, None, None], [None, None, None]])
 # valence scores
-scores_devel_V = np.array([[None, None, None], [None, None, None]])
+scores_devel_V = np.array([test_scores])
 # liking scores
 scores_devel_L = np.array([[None, None, None], [None, None, None]])
 
