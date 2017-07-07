@@ -71,10 +71,11 @@ def read_data(pNum, data_dir, split="train", length_of_timestep=100,
     Y_tensor = torch.from_numpy(Y_np).float()
     Y = Variable(Y_tensor)
 
-    return X, Y
+    return X, Y, num_features, seq_len
 
 # real input
-Y, X = read_data(1, data_dir, useAudio=True, useVideo=False, useText=False)
+Y, X, num_features, seq_len = read_data(1, data_dir, useAudio=True,
+                                        useVideo=False, useText=False)
 
 class Net(nn.Module):
     def __init__(self):

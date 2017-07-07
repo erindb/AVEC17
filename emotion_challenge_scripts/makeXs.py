@@ -156,7 +156,7 @@ Each participant has a different number of timesteps
     length_of_timestep - in ms
 """
 def get_num_timesteps(pNum, dataset, split="train", length_of_timestep=100):
-    assert(split in ["train", "valid", "test"])
+    assert(split in ["train", "devel", "test"])
 
     finest_granularity_filename = os.path.join(dataset,
                                                "audio_features/",
