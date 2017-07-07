@@ -114,7 +114,7 @@ def make_Xs(pNum, data_dir, split="train", length_of_timestep=100,
 
     ### --- loop to read in features --- ###
     for thisFolder in path_features:
-        print("reading in features from " + thisFolder)
+        print("makeXs: reading in __" + split + "__ features from " + thisFolder)
         theseFeatures = np.float64([])
         fullName = os.path.join(thisFolder, pNumFilename)
         ### --- first, read in ALL rows. Interpolate later --- ###
@@ -127,6 +127,7 @@ def make_Xs(pNum, data_dir, split="train", length_of_timestep=100,
             numFeatures = len(myRow) - 1
             assert(numFeatures * numRows == len(theseFeatures))
         theseFeatures = theseFeatures.reshape(numRows, numFeatures)
+        print("makeXs: ... done reading in features!")
 
         if not np.isclose(theseFeatures[1, 0] - theseFeatures[0, 0], length_of_timestep):
             # need interpolation.
@@ -137,6 +138,7 @@ def make_Xs(pNum, data_dir, split="train", length_of_timestep=100,
             newTimeVector = [float(x)*length_of_timestep for x in xrange(totalTimeSteps)]
             # ... todo: FIX ME
             print("Oops you reached here; interpolation isn't working yet. wah wah.")
+            print("let desmond know.")
 
         if featuresT.shape==(0,):
             featuresT = theseFeatures
