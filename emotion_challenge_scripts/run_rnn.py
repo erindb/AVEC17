@@ -46,24 +46,35 @@ torch.manual_seed(123)
 # # random input
 # X_np = np.random.rand(1756, 1, 8962)
 
+def read_data(pNum, data_dir, split="train", length_of_timestep=100,
+    useAudio=True, useVideo=True, useText=True):
+
+    Y_np, X_np = make_Xs(pNum=pNum, data_dir=data_dir, split=split,
+                         length_of_timestep=length_of_timestep,
+                         useAudio=useAudio, useVideo=useVideo,
+                         useText=useText)
+
+    # X = np.random.rand(1756, 1, 8962)
+    # exclude first column (time)
+    X_np = X_np[:, 1:]
+    Y_np = Y_np[:, 1]
+    X_np = X_np.reshape(X_np.shape[0], 1, X_np.shape[1])
+    Y_np = Y_np.reshape(Y_np.shape[0], 1, 1)
+
+    seq_len = X_np.shape[0]
+    num_features = X_np.shape[2]
+
+    X_tensor = torch.from_numpy(X_np).float()
+    X = Variable(X_tensor)
+
+    # Y_np = np.random.rand(1756, 1, 1) # do later
+    Y_tensor = torch.from_numpy(Y_np).float()
+    Y = Variable(Y_tensor)
+
+    return X, Y
+
 # real input
-Y_np, X_np = make_Xs(1, data_dir, useAudio=True, useVideo=False, useText=False)
-# X = np.random.rand(1756, 1, 8962)
-# exclude first column (time)
-X_np = X_np[:, 1:]
-Y_np = Y_np[:, 1]
-X_np = X_np.reshape(X_np.shape[0], 1, X_np.shape[1])
-Y_np = Y_np.reshape(Y_np.shape[0], 1, 1)
-
-seq_len = X_np.shape[0]
-num_features = X_np.shape[2]
-
-X_tensor = torch.from_numpy(X_np).float()
-X = Variable(X_tensor)
-
-# Y_np = np.random.rand(1756, 1, 1) # do later
-Y_tensor = torch.from_numpy(Y_np).float()
-Y = Variable(Y_tensor)
+Y, X = read_data(1, data_dir, useAudio=True, useVideo=False, useText=False)
 
 class Net(nn.Module):
     def __init__(self):
