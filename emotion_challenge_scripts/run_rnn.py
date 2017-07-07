@@ -83,35 +83,6 @@ class DataLoader():
         return X, Y, num_features, seq_len
 
 
-
-
-# def read_data(pNum, data_dir, split="train", length_of_timestep=100,
-#     useAudio=True, useVideo=True, useText=True):
-
-#     Y_np, X_np = make_Xs(pNum=pNum, data_dir=data_dir, split=split,
-#                          length_of_timestep=length_of_timestep,
-#                          useAudio=useAudio, useVideo=useVideo,
-#                          useText=useText)
-
-#     # X = np.random.rand(1756, 1, 8962)
-#     # exclude first column (time)
-#     X_np = X_np[:, 1:]
-#     Y_np = Y_np[:, 1]
-#     X_np = X_np.reshape(X_np.shape[0], 1, X_np.shape[1])
-#     Y_np = Y_np.reshape(Y_np.shape[0], 1, 1)
-
-#     seq_len = X_np.shape[0]
-#     num_features = X_np.shape[2]
-
-#     X_tensor = torch.from_numpy(X_np).float()
-#     X = Variable(X_tensor)
-
-#     # Y_np = np.random.rand(1756, 1, 1) # do later
-#     Y_tensor = torch.from_numpy(Y_np).float()
-#     Y = Variable(Y_tensor)
-
-#     return X, Y, num_features, seq_len
-
 # real input
 trainLoader = DataLoader(pNum = 1, data_dir=data_dir, useAudio=True, 
     useVideo=False, useText=False)
@@ -142,13 +113,18 @@ class Net(nn.Module):
         return Variable(weight.new(1, batch_size, hidden_size).zero_())
         # return Variable(torch.from_numpy(np.random.rand(1,1,hidden_size)))
 
-model = Net()
+models = {"arousal": Net(), "valence": Net(), "liking": Net()}
+
 criterion = nn.MSELoss()
 
-optimizer = torch.optim.Adam(model.parameters())
+# ================= Run our model ================= 
 
 #...
-def train():
+def train(labelType):
+    X, Y, num_features, seq_len = trainLoader.read_data(labelType)
+
+    model = models[labelType]
+    optimizer = torch.optim.Adam(model.parameters())
     model.train()
     hidden = model.init_hidden()
     # for each batch
@@ -162,9 +138,7 @@ def train():
         loss.backward(retain_variables=True)
         optimizer.step()
 
-train()
-
-# ================= Run our model ================= 
+train("arousal")
 
 # try this?:
 # https://discuss.pytorch.org/t/rnn-for-sequence-prediction/182/15
@@ -175,6 +149,8 @@ testLoader = DataLoader(pNum = 1, data_dir=data_dir, split="devel",
 def test(labelType):
     X, Y, num_features, seq_len = testLoader.read_data(labelType)
 
+    model = models[labelType]
+    
     hidden = model.init_hidden()
 
     output, hidden = model.forward(X, hidden)
