@@ -1,0 +1,82 @@
+---
+title: "Label Statistics"
+output:
+  html_document:
+    fig_width: 8
+    fig_height: 8
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, out.width='750px', dpi=200)
+```
+
+```{r}
+#Clears everything (useful when not knitting and testing things in the console)
+rm(list=ls())
+```
+
+Import Libraries
+```{r, message=FALSE}
+library(dplyr)
+library(tidyr)
+require(ggplot2)
+```
+
+Load Features and Labels
+```{r}
+n_files = 2
+data_dir = "../data/AVEC_17_Emotion_Sub-Challenge/"
+audio_files = c(sapply(paste(data_dir, "audio_features/", sep=""), function(feature_dir) {
+  list.files(feature_dir, full.names=T, pattern="(Devel|Train).*")
+}))
+video_files = c(sapply(paste(data_dir, "video_features/", sep=""), function(feature_dir) {
+  list.files(feature_dir, full.names=T, pattern="(Devel|Train).*")
+}))
+label_files = c(sapply(paste(data_dir, "labels/", sep=""), function(feature_dir) {
+  list.files(feature_dir, full.names=T, pattern="(Devel|Train).*")
+}))
+audio_col_names = c("instancename", "timestamp", "Loudness_sma3", "alphaRatio_sma3", "hammarbergIndex_sma3", "slope0-500_sma3", "slope500-1500_sma3", "spectralFlux_sma3", "mfcc1_sma3", "mfcc2_sma3", "mfcc3_sma3", "mfcc4_sma3", "F0semitoneFrom27.5Hz_sma3nz", "jitterLocal_sma3nz", "shimmerLocaldB_sma3nz", "HNRdBACF_sma3nz", "logRelF0-H1-H2_sma3nz", "logRelF0-H1-A3_sma3nz", "F1frequency_sma3nz", "F1bandwidth_sma3nz", "F1amplitudeLogRelF0_sma3nz", "F2frequency_sma3nz", "F2amplitudeLogRelF0_sma3nz", "F3frequency_sma3nz", "F3amplitudeLogRelF0_sma3nz")
+video_col_names = c("instancename", "timestamp", "pitch", "yaw", "roll",
+                    c(rbind(paste("x", 1:10, sep=""), paste("y", 1:10, sep=""))),
+                    c(rbind(paste("xx", 1:49, sep=""), paste("yy", 1:49, sep=""))))
+label_col_names = c("instancename", "timestamp", "arousal", "valence", "liking")
+read_audio_file = function(f) {read.csv(f, sep=";", header=F, col.names = audio_col_names)}
+read_video_file = function(f) {read.csv(f, sep=";", header=F, col.names = video_col_names)}
+read_label_file = function(f) {read.csv(f, sep=";", header=F, col.names = label_col_names)}
+audio_features = do.call(rbind, lapply(audio_files[1:n_files], read_audio_file))
+video_features = do.call(rbind, lapply(video_files[1:n_files], read_video_file))
+labels = do.call(rbind, lapply(label_files[1:n_files], read_label_file))
+data = merge(merge(audio_features, video_features), labels)
+```
+
+Correlations and distributions of first few audio features and valence.
+
+```{r}
+library("GGally")
+n_features = 5
+discretize_label = function(label_vector) {
+  cut(label_vector, breaks=quantile(label_vector, probs=seq(0,1, by=0.25), na.rm=TRUE), 
+                                include.lowest=TRUE)
+}
+colfunc <- colorRampPalette(c("#16304a", "#54aff5"))
+my_dens <- function(data, mapping, ..., low = "#132B43", high = "#56B1F7") {
+  ggplot(data = data, mapping=mapping) +
+    geom_density(...) +
+    scale_fill_manual(values=colfunc(4))
+}
+my_scatter <- function(data, mapping, ..., low = "#132B43", high = "#56B1F7") {
+  ggplot(data = data, mapping=mapping) +
+    geom_density(...) +
+    scale_fill_manual(values=colfunc(4))
+}
+data %>% select(-instancename, -timestamp) %>%
+  select(c(names(.)[1:n_features], "valence")) %>%
+  mutate(discrete_valence = discretize_label(valence)) %>%
+  ggpairs(.,
+          mapping=aes(colour=valence, fill=discrete_valence),
+          columns=1:n_features,
+          legend=c(1,2),
+          diag=list(continuous=my_dens),
+          upper=list(continuous="points"))
+```
+
