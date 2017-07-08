@@ -15,6 +15,10 @@ import itertools
 import load_features
 
 
+# PARTICIPANT_NUMBERS = {'train': 34, 'devel': 14, 'test': 16}
+PARTICIPANT_NUMBERS = {'train': 2, 'devel': 2, 'test': 2}  # if you just want to do fast testing
+
+
 # Returns a string of the filename given the participant number
 def make_name(pNum, split="train"):
     pStr = str(pNum)
@@ -79,7 +83,6 @@ def make_Xs(pNum, data_dir, split="train", length_of_timestep=100,
 
     # data_dir="../data/AVEC_17_Emotion_Sub-Challenge"
     path_labels = os.path.join(data_dir, "labels/")
-    path_features = []
     pNumFilename = make_name(pNum, split)
 
     if length_of_timestep == 100:
@@ -105,6 +108,7 @@ def make_Xs(pNum, data_dir, split="train", length_of_timestep=100,
 
     featuresT = np.float64([])
 
+    path_features = []
     if useAudio:
         path_features.append( os.path.join(data_dir, "audio_features_xbow_6s/") )
     if useVideo:
@@ -114,7 +118,7 @@ def make_Xs(pNum, data_dir, split="train", length_of_timestep=100,
 
     ### --- loop to read in features --- ###
     for thisFolder in path_features:
-        print("makeXs: reading in __" + split + "__ features from " + thisFolder[(len(data_dir)+1):])
+        print("makeXs: reading in __" + split + "__ features for participant " + str(pNum) + "/" + str(PARTICIPANT_NUMBERS[split]) + " from " + thisFolder[(len(data_dir)+1):])
         theseFeatures = np.float64([])
         fullName = os.path.join(thisFolder, pNumFilename)
         ### --- first, read in ALL rows. Interpolate later --- ###
@@ -127,7 +131,7 @@ def make_Xs(pNum, data_dir, split="train", length_of_timestep=100,
             numFeatures = len(myRow) - 1
             assert(numFeatures * numRows == len(theseFeatures))
         theseFeatures = theseFeatures.reshape(numRows, numFeatures)
-        print("makeXs: ... done reading in features!")
+        print("makeXs: ... done reading in features for participant " + str(pNum) + "/" + str(PARTICIPANT_NUMBERS[split]) + "!")
 
         if not np.isclose(theseFeatures[1, 0] - theseFeatures[0, 0], length_of_timestep):
             # need interpolation.
@@ -148,11 +152,15 @@ def make_Xs(pNum, data_dir, split="train", length_of_timestep=100,
     # return the labels and the features
     return labelsT, featuresT
 
-"""
-Desmond, fix me!!!
-"""
-def makeX():
-    return None
+
+def makeX(data_dir, split="train", length_of_timestep=100,
+    useAudio=True, useVideo=True, useText=True):
+    maxPnums = PARTICIPANT_NUMBERS[split]
+    def get_subj_data(pNum):
+        return make_Xs(pNum, data_dir, split=split, 
+                       length_of_timestep=length_of_timestep,
+                       useAudio=useAudio, useVideo=useVideo, useText=useText)
+    return zip(*[get_subj_data(pNum) for pNum in range(1,maxPnums+1)])
 
 """
 Each participant has a different number of timesteps
