@@ -18,3 +18,4 @@ To Do List
 	☐ plot model predictions and actual labels against time [Marissa]
 ☐ tune model architecture
 ☐ wat iz time delay
+☐ regularization?
