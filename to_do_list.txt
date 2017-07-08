@@ -1,8 +1,8 @@
 To Do List
 ==========
 
-☐ load in all the participants! (in batches of 1 each)
-	☐ DataLoader will call makeX
+☑ load in all the participants! (in batches of 1 each)
+	☑ DataLoader will call makeX
 	  and DataLoader.read_data will return batches:
 	  a list of pytorch variables with tensors in them
 	  (each batch is one participant)
@@ -10,7 +10,7 @@ To Do List
 	☑ makeX will call makeXs once for each participant
 	  makeXs will return a *list* of np arrays, not a tensor
 	  [Desmond]	  
-☐ add batches to train(), e.g. for batch in batches...
+	☑ add batches to train(), e.g. for batch in batches...
 ☐ load transcript features into model
 ☐ visualize things
 	☐ learning curves [Marissa]

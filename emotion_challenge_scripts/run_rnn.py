@@ -27,13 +27,15 @@ from calc_scores       import calc_scores
 from write_predictions import write_predictions
 
 from os.path import join as pjoin
-from makeXs import make_Xs, get_num_timesteps
+from makeXs import makeX
 
 # ================= Load features ================= 
 
 # Set folders here
 path_test_predictions = "test_predictions/"
-b_test_available      = False  # If the test labels are not available, the predictions on test are written into the folder 'path_test_predictions'
+# If the test labels are not available, the predictions on
+# test are written into the folder 'path_test_predictions'
+b_test_available      = False  
 data_dir = "../data/AVEC_17_Emotion_Sub-Challenge"
 
 hidden_size = 10 #4000
@@ -48,13 +50,14 @@ torch.manual_seed(123)
 
 
 class DataLoader():
-    def __init__(self, pNum, data_dir, split="train", length_of_timestep=100,
-        useAudio=True, useVideo=True, useText=True):
+    def __init__(self, data_dir, split="train", length_of_timestep=100,
+                 useAudio=True, useVideo=True, useText=True):
+
         self.labelDict = {'arousal': 1, 'valence': 2, 'liking': 3}
-        self.Y_np, self.X_np = make_Xs(pNum=pNum, data_dir=data_dir, split=split,
-                             length_of_timestep=length_of_timestep,
-                             useAudio=useAudio, useVideo=useVideo,
-                             useText=useText)
+        self.Y_np, self.X_np = makeX(data_dir=data_dir, split=split,
+                                     length_of_timestep=length_of_timestep,
+                                     useAudio=useAudio, useVideo=useVideo,
+                                     useText=useText)
 
     def read_data(self, labelType):
         # label_num = 1, 2 or 3.
@@ -62,31 +65,34 @@ class DataLoader():
         
         label_num = self.labelDict[labelType]
 
-        # X = np.random.rand(1756, 1, 8962)
-        # exclude first column (time)
-        X_np = self.X_np[:, 1:]
-        Y_np = self.Y_np[:, label_num]
+        x_variables = []
+        y_variables = []
 
-        X_np = X_np.reshape(X_np.shape[0], 1, X_np.shape[1])
-        Y_np = Y_np.reshape(Y_np.shape[0], 1, 1)
+        for i in range(len(self.X_np)):
+            X_np = self.X_np[i][:, 1:]
+            Y_np = self.Y_np[i][:, label_num]
 
-        seq_len = X_np.shape[0]
-        num_features = X_np.shape[2]
+            X_np = X_np.reshape(X_np.shape[0], 1, X_np.shape[1])
+            Y_np = Y_np.reshape(Y_np.shape[0], 1, 1)
 
-        X_tensor = torch.from_numpy(X_np).float()
-        X = Variable(X_tensor)
+            num_features = X_np.shape[2]
 
-        # Y_np = np.random.rand(1756, 1, 1) # do later
-        Y_tensor = torch.from_numpy(Y_np).float()
-        Y = Variable(Y_tensor)
+            X_tensor = torch.from_numpy(X_np).float()
+            X = Variable(X_tensor)
+            x_variables.append(X)
 
-        return X, Y, num_features, seq_len
+            # Y_np = np.random.rand(1756, 1, 1) # do later
+            Y_tensor = torch.from_numpy(Y_np).float()
+            Y = Variable(Y_tensor)
+            y_variables.append(Y)
+
+        return x_variables, y_variables, num_features
 
 
 # real input
-trainLoader = DataLoader(pNum = 1, data_dir=data_dir, useAudio=True, 
+trainLoader = DataLoader(data_dir=data_dir, useAudio=True, 
     useVideo=False, useText=False)
-X, Y, num_features, seq_len = trainLoader.read_data('arousal')
+X, Y, num_features = trainLoader.read_data('arousal')
 
 class Net(nn.Module):
     def __init__(self):
@@ -122,7 +128,7 @@ criterion = nn.MSELoss()
 
 #...
 def train(labelType):
-    X, Y, num_features, seq_len = trainLoader.read_data(labelType)
+    X_batches, Y_batches, num_features = trainLoader.read_data(labelType)
 
     model = models[labelType]
     optimizer = torch.optim.Adam(model.parameters())
@@ -131,13 +137,16 @@ def train(labelType):
     # for each batch
 
     for epoch in range(num_epochs):
-        model.zero_grad()
-        output, hidden = model.forward(X, hidden)
-        loss = criterion(output, Y)
-        print ('Epoch [%d/%d], Loss: %.4f' 
-                   %(epoch+1, num_epochs, loss.data[0]))        
-        loss.backward(retain_variables=True)
-        optimizer.step()
+        for batch_index in range(len(X_batches)):
+            X = X_batches[batch_index]
+            Y = Y_batches[batch_index]
+            model.zero_grad()
+            output, hidden = model.forward(X, hidden)
+            loss = criterion(output, Y)
+            print ('Epoch [%d/%d], Batch [%d], Loss: %.4f' 
+                       %(epoch+1, num_epochs, batch_index, loss.data[0]))        
+            loss.backward(retain_variables=True)
+            optimizer.step()
 
 for labelType in labelTypes:
     train(labelType)
@@ -145,18 +154,24 @@ for labelType in labelTypes:
 # try this?:
 # https://discuss.pytorch.org/t/rnn-for-sequence-prediction/182/15
 
-testLoader = DataLoader(pNum = 1, data_dir=data_dir, split="devel",
+testLoader = DataLoader(data_dir=data_dir, split="devel",
                         useAudio=True, useVideo=False, useText=False)
 
 def test(labelType):
-    X, Y, num_features, seq_len = testLoader.read_data(labelType)
+    X_batches, Y_batches, num_features = testLoader.read_data(labelType)
 
     model = models[labelType]
 
-    hidden = model.init_hidden()
+    output_predictions = []
+    for batch_index in range(len(X_batches)):
+        hidden = model.init_hidden()
+        output, hidden = model.forward(X_batches[batch_index], hidden)
+        output_predictions.append(output.data.numpy())
 
-    output, hidden = model.forward(X, hidden)
-    return calc_scores(output.data.numpy(), Y.data.numpy())
+    predicted_labels = np.concatenate(output_predictions, 0)
+    true_labels = np.concatenate([Y.data.numpy() for Y in Y_batches], 0)
+
+    return calc_scores(predicted_labels, true_labels)
 
 
 ## fix me!!!
