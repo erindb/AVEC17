@@ -49,6 +49,8 @@ num_epochs = 2
 rnn_type = nn.GRU
 nonlinearity = F.relu
 num_layers = 1
+learning_rate = 0.001
+regularization = 0
 
 torch.manual_seed(123)
 
@@ -138,7 +140,9 @@ def train(labelType):
     X_batches, Y_batches, num_features = trainLoader.read_data(labelType)
 
     model = models[labelType]
-    optimizer = torch.optim.Adam(model.parameters())
+    optimizer = torch.optim.Adam(model.parameters(),
+                                 lr = learning_rate,
+                                 weight_decay=regularization)
     model.train()
     hidden = model.init_hidden()
 
@@ -187,12 +191,6 @@ def test(labelType):
     true_labels = np.concatenate([Y.data.numpy() for Y in Y_batches], 0)
 
     return calc_scores(predicted_labels, true_labels)
-
-
-
-
-## fix me!!!
-# this is the basic format of how the output should look:
 
 # arousal scores
 scores_devel_A = np.array([test("arousal")])
