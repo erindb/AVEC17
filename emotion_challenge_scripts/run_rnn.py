@@ -28,7 +28,7 @@ from write_predictions import write_predictions
 
 from os.path import join as pjoin
 from makeXs import makeX
-from plot_models import plot_loss
+from plot_models import *
 
 
 # ================= Load features ================= 
@@ -153,8 +153,7 @@ def train(labelType):
             loss.backward(retain_variables=True)
             optimizer.step()
 
-    plot_loss(loss_array = all_losses, batch_size = batch_size, num_epochs = num_epochs, labelType = labelType)
-
+    plot_loss(loss_array = all_losses, labelType = labelType, hidden_size = hidden_size, h2_size = h2_size, batch_size = batch_size, num_epochs = num_epochs)
 
 
 
@@ -181,7 +180,10 @@ def test(labelType):
     predicted_labels = np.concatenate(output_predictions, 0)
     true_labels = np.concatenate([Y.data.numpy() for Y in Y_batches], 0)
 
+    plot_test(predicted_labels, true_labels, labelType=labelType, hidden_size = hidden_size, h2_size = h2_size, batch_size = batch_size, num_epochs = num_epochs)
+
     return calc_scores(predicted_labels, true_labels)
+
 
 
 
@@ -195,6 +197,9 @@ scores_devel_A = np.array([test("arousal")])
 scores_devel_V = np.array([test("valence")])
 # liking scores
 scores_devel_L = np.array([test("liking")])
+
+
+end_html()
 
 ## what follows is unchanged from baseline
 
