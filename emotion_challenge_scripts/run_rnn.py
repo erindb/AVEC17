@@ -48,6 +48,7 @@ batch_size = 1
 num_epochs = 2
 rnn_type = nn.GRU
 nonlinearity = F.relu
+num_layers = 1
 
 torch.manual_seed(123)
 
@@ -105,7 +106,7 @@ class Net(nn.Module):
         super(Net, self).__init__()
         self.rnn1 = rnn_type(input_size=num_features,
                            hidden_size=hidden_size,
-                           num_layers=1)
+                           num_layers=num_layers)
         self.W1 = nn.Linear(hidden_size, h2_size)
         self.W2 = nn.Linear(h2_size, 1)
 
@@ -122,7 +123,7 @@ class Net(nn.Module):
 
     def init_hidden(self, batch_size=batch_size):
         weight = next(self.parameters()).data
-        return Variable(weight.new(1, batch_size, hidden_size).zero_())
+        return Variable(weight.new(num_layers*1, batch_size, hidden_size).zero_())
         # return Variable(torch.from_numpy(np.random.rand(1,1,hidden_size)))
 
 labelTypes = ["arousal", "valence", "liking"]
