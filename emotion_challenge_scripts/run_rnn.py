@@ -30,7 +30,9 @@ from os.path import join as pjoin
 from makeXs import makeX
 from plot_models import plot_loss
 
+from datetime import datetime
 
+start = datetime.now()  
 # ================= Load features ================= 
 
 # Set folders here
@@ -44,6 +46,8 @@ hidden_size = 10 #4000
 h2_size = 10 #50
 batch_size = 1
 num_epochs = 2
+rnn_type = nn.GRU
+nonlinearity = F.relu
 
 torch.manual_seed(123)
 
@@ -99,7 +103,7 @@ X, Y, num_features = trainLoader.read_data('arousal')
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.rnn1 = nn.GRU(input_size=num_features,
+        self.rnn1 = rnn_type(input_size=num_features,
                            hidden_size=hidden_size,
                            num_layers=1)
         self.W1 = nn.Linear(hidden_size, h2_size)
@@ -110,7 +114,7 @@ class Net(nn.Module):
         x, hidden = self.rnn1(x, hidden)
 
         h1 = x.view(-1, hidden_size)
-        h2 = F.relu(self.W1(h1))
+        h2 = nonlinearity(self.W1(h1))
 
         y = self.W2(h2)
 
@@ -238,3 +242,5 @@ with open("results_pcc.txt", 'a') as myfile:
 with open("results_rmse.txt", 'a') as myfile:
     myfile.write("Arousal Valence Liking\n")
     myfile.write(str(result_rmse) + '\n')
+
+print("%d seconds" %(datetime.now() - start).seconds)
