@@ -28,6 +28,8 @@ from write_predictions import write_predictions
 
 from os.path import join as pjoin
 from makeXs import makeX
+from plot_models import plot_loss
+
 
 # ================= Load features ================= 
 
@@ -134,7 +136,9 @@ def train(labelType):
     optimizer = torch.optim.Adam(model.parameters())
     model.train()
     hidden = model.init_hidden()
-    # for each batch
+
+    all_losses = []
+
 
     for epoch in range(num_epochs):
         for batch_index in range(len(X_batches)):
@@ -144,9 +148,15 @@ def train(labelType):
             output, hidden = model.forward(X, hidden)
             loss = criterion(output, Y)
             print ('Epoch [%d/%d], Batch [%d], Loss: %.4f' 
-                       %(epoch+1, num_epochs, batch_index, loss.data[0]))        
+                       %(epoch+1, num_epochs, batch_index, loss.data[0])) 
+            all_losses.append(loss.data[0])       
             loss.backward(retain_variables=True)
             optimizer.step()
+
+    plot_loss(loss_array = all_losses, batch_size = batch_size, num_epochs = num_epochs, labelType = labelType)
+
+
+
 
 for labelType in labelTypes:
     train(labelType)
@@ -172,6 +182,8 @@ def test(labelType):
     true_labels = np.concatenate([Y.data.numpy() for Y in Y_batches], 0)
 
     return calc_scores(predicted_labels, true_labels)
+
+
 
 
 ## fix me!!!
