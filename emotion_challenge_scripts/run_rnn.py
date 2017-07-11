@@ -30,7 +30,9 @@ from os.path import join as pjoin
 from makeXs import makeX
 from plot_models import *
 
+from datetime import datetime
 
+start = datetime.now()  
 # ================= Load features ================= 
 
 # Set folders here
@@ -44,6 +46,11 @@ hidden_size = 10 #4000
 h2_size = 10 #50
 batch_size = 1
 num_epochs = 2
+rnn_type = nn.GRU
+nonlinearity = F.relu
+num_layers = 1
+learning_rate = 0.001
+regularization = 0
 
 torch.manual_seed(123)
 
@@ -99,9 +106,9 @@ X, Y, num_features = trainLoader.read_data('arousal')
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.rnn1 = nn.GRU(input_size=num_features,
+        self.rnn1 = rnn_type(input_size=num_features,
                            hidden_size=hidden_size,
-                           num_layers=1)
+                           num_layers=num_layers)
         self.W1 = nn.Linear(hidden_size, h2_size)
         self.W2 = nn.Linear(h2_size, 1)
 
@@ -110,7 +117,7 @@ class Net(nn.Module):
         x, hidden = self.rnn1(x, hidden)
 
         h1 = x.view(-1, hidden_size)
-        h2 = F.relu(self.W1(h1))
+        h2 = nonlinearity(self.W1(h1))
 
         y = self.W2(h2)
 
@@ -118,7 +125,7 @@ class Net(nn.Module):
 
     def init_hidden(self, batch_size=batch_size):
         weight = next(self.parameters()).data
-        return Variable(weight.new(1, batch_size, hidden_size).zero_())
+        return Variable(weight.new(num_layers*1, batch_size, hidden_size).zero_())
         # return Variable(torch.from_numpy(np.random.rand(1,1,hidden_size)))
 
 labelTypes = ["arousal", "valence", "liking"]
@@ -133,7 +140,9 @@ def train(labelType):
     X_batches, Y_batches, num_features = trainLoader.read_data(labelType)
 
     model = models[labelType]
-    optimizer = torch.optim.Adam(model.parameters())
+    optimizer = torch.optim.Adam(model.parameters(),
+                                 lr = learning_rate,
+                                 weight_decay=regularization)
     model.train()
     hidden = model.init_hidden()
 
@@ -184,12 +193,6 @@ def test(labelType):
 
     return calc_scores(predicted_labels, true_labels)
 
-
-
-
-
-## fix me!!!
-# this is the basic format of how the output should look:
 
 # arousal scores
 scores_devel_A = np.array([test("arousal")])
@@ -243,3 +246,5 @@ with open("results_pcc.txt", 'a') as myfile:
 with open("results_rmse.txt", 'a') as myfile:
     myfile.write("Arousal Valence Liking\n")
     myfile.write(str(result_rmse) + '\n')
+
+print("%d seconds" %(datetime.now() - start).seconds)
