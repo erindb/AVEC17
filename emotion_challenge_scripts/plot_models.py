@@ -18,9 +18,8 @@ else:
 		time = datetime.datetime.today().strftime('%Y-%m-%d--%H-%M-%S')
 		#Plot Table
 		loss_table = pd.DataFrame(loss_array)
-		loss_table.columns = ['loss']
-		loss_table['run'] = loss_table.index + 1 
-		p = ggplot(aes(x='run', y='loss'), data=loss_table) + geom_point() + geom_line()
+		loss_table.columns = ['epoch', 'batch', 'loss']
+		p = ggplot(aes('epoch', 'loss'), data=loss_table) + geom_point() + geom_line() + facet_wrap('batch')
 
 		#Save plot in HTML file
 		p.save('./plots/' + time + "-" + labelType + '_train.tiff', width=4, height=4, dpi=144)
@@ -29,10 +28,10 @@ else:
 		f1.write('<br><h3>' + time + ' - Training </h3>'
 		'<br>Batch Size:	   ' + str(batch_size) + 
 		'<br>Number of Epochs: ' + str(num_epochs) + "<br>--" +
-		'<br>Hidden Size:	  ' + str(hidden_size) + 
-		'<br>H2 Size:	  ' + str(h2_size) + "<br>--" +
-		'<br>Label :<b>	   ' + labelType +
-					'<br><img src="' + time + "-" + labelType + '_train.tiff">')
+		'<br>Hidden Size:	   ' + str(hidden_size) + 
+		'<br>H2 Size:          ' + str(h2_size) + "<br>--" +
+		'<br>Label :<b>	       ' + labelType +
+		'</b><br><img src="' + time + "-" + labelType + '_train.tiff">')
 
 
 	def plot_test(predicted_labels, true_labels, labelType, hidden_size, h2_size, batch_size, num_epochs):
@@ -48,9 +47,9 @@ else:
 		f1.write('<br><h3>' + time + ' - Testing </h3>'
 		'<br>Batch Size:	   ' + str(batch_size) + 
 		'<br>Number of Epochs: ' + str(num_epochs) + "<br>--" +
-		'<br>Hidden Size:	  ' + str(hidden_size) + 
-		'<br>H2 Size:	  ' + str(h2_size) + "<br>--" +
-		'<br>Label :<b>	   ' + labelType +
+		'<br>Hidden Size:      ' + str(hidden_size) + 
+		'<br>H2 Size:	       ' + str(h2_size) + "<br>--" +
+		'<br>Label :<b>	       ' + labelType +
 		'</b><br><img src="' + time + "-" + labelType + '_test.tiff">')
 
 	def end_html(): 
