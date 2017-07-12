@@ -51,8 +51,14 @@ nonlinearity = F.relu
 num_layers = 1
 learning_rate = 0.001
 regularization = 0
+seed=123
 
-torch.manual_seed(123)
+torch.manual_seed(seed)
+
+
+rnn_parameter_dict = {'hidden_size': hidden_size, 'h2_size': h2_size, 'batch_size':batch_size, 'num_epochs':num_epochs,
+                        'rnn_type':rnn_type, 'nonlinearity':nonlinearity, 'num_layers':num_layers, 'learning_rate':learning_rate, 
+                        'regularization':regularization, 'seed':seed}
 
 # # random input
 # X_np = np.random.rand(1756, 1, 8962)
@@ -158,13 +164,11 @@ def train(labelType):
             loss = criterion(output, Y)
             print ('Epoch [%d/%d], Batch [%d], Loss: %.4f' 
                        %(epoch+1, num_epochs, batch_index, loss.data[0])) 
-            all_losses.append(loss.data[0])       
+            all_losses.append([epoch, batch_index, loss.data[0]])       
             loss.backward(retain_variables=True)
             optimizer.step()
-
-    plot_loss(loss_array = all_losses, labelType = labelType, hidden_size = hidden_size, h2_size = h2_size, batch_size = batch_size, num_epochs = num_epochs)
-
-
+    print(all_losses)
+    plot_loss(loss_array = all_losses, labelType = labelType, rnn_parameter_dict = rnn_parameter_dict)
 
 for labelType in labelTypes:
     train(labelType)
@@ -189,8 +193,8 @@ def test(labelType):
     predicted_labels = np.concatenate(output_predictions, 0)
     true_labels = np.concatenate([Y.data.numpy() for Y in Y_batches], 0)
 
-    plot_test(predicted_labels, true_labels, labelType=labelType, hidden_size = hidden_size, h2_size = h2_size, batch_size = batch_size, num_epochs = num_epochs)
-
+    plot_test(predicted_labels, true_labels, labelType=labelType, rnn_parameter_dict= rnn_parameter_dict)
+    
     return calc_scores(predicted_labels, true_labels)
 
 
